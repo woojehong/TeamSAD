@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>손님 신청 — SAD 공격대</title>
+    <link rel="icon" type="image/png" href="icon3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: {
+                canvas:'#010102', s1:'#0f1011', s2:'#141516', s3:'#18191a',
+                hairline:'#23252a','hairline-strong':'#34343a',
+                ink:'#f7f8f8','ink-muted':'#d0d6e0','ink-subtle':'#8a8f98','ink-tertiary':'#62666d',
+                gold:'#C9A84C','gold-bright':'#E4C46A'
+            },
+            fontFamily:{ sans:['Pretendard','Inter','sans-serif'] }
+        }}};
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root{
+            --canvas:#010102; --s1:#0f1011; --s2:#141516; --s3:#18191a;
+            --hairline:#23252a; --hairline-strong:#34343a; --hairline-3:#3e3e44;
+            --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#aab0bb; --ink-tertiary:#82868f;
+            --gold:#C9A84C; --gold-bright:#E4C46A; --kakao:#FEE500;
+            --sat:#5b9bd5; --sun:#d97b7b;
+        }
+        *{ -webkit-tap-highlight-color:transparent; }
+        body{
+            font-family:'Pretendard','Inter',sans-serif;
+            background-color:var(--canvas); color:var(--ink-muted);
+            letter-spacing:-0.011em; min-height:100vh; overflow-x:hidden;
+            -webkit-font-smoothing:antialiased;
+        }
+        .font-display{ font-family:'Inter','Pretendard',sans-serif; }
+        .tracking-display{ letter-spacing:-0.035em; }
+        .tracking-tight2{ letter-spacing:-0.02em; }
+        .eyebrow{ font-size:12px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); }
+
+        .lin-panel{ background:var(--s1); border:1px solid var(--hairline); border-radius:16px; }
+        .btn-secondary{ background:var(--s1); color:var(--ink); border:1px solid var(--hairline); border-radius:8px; transition:.18s; font-weight:500; }
+        .btn-secondary:hover{ background:var(--s2); border-color:var(--hairline-strong); }
+        .btn-kakao{ background:var(--kakao); color:#191600; font-weight:600; border-radius:10px; transition:filter .18s, transform .18s; }
+        .btn-kakao:hover{ filter:brightness(0.94); transform:translateY(-2px); }
+
+        .canvas-glow::before{
+            content:''; position:fixed; top:-40%; left:50%; transform:translateX(-50%);
+            width:900px; height:600px; pointer-events:none; z-index:0;
+            background:radial-gradient(ellipse at center, rgba(201,168,76,0.05), transparent 65%);
+        }
+
+        /* 캘린더 셀 */
+        .slot-cell{
+            background:var(--s1); border:1px solid var(--hairline); border-radius:12px;
+            display:flex; flex-direction:column; transition:border-color .2s ease, background-color .2s ease;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+        .slot-cell:hover{ border-color:var(--hairline-strong); }
+        .past-date{ opacity:0.32; pointer-events:none; filter:grayscale(60%); }
+
+        /* 파티 카드 (셀 내부) */
+        .party-chip{ background:var(--s2); border:1px solid var(--hairline); border-radius:10px; transition:border-color .2s ease, background-color .2s ease, transform .2s ease; }
+        .party-chip-live{ cursor:pointer; }
+        .party-chip-live:hover{ border-color:rgba(201,168,76,0.45); background:var(--s3); transform:translateY(-1px); }
+
+        .pos-box{ display:block; width:100%; text-align:center; font-size:12.5px; font-weight:600; padding:6px 8px; border-radius:7px; border:1px solid; }
+
+        .floating-kakao{ position:fixed; bottom:28px; right:28px; z-index:9999; cursor:pointer; transition:transform .25s ease; }
+        .floating-kakao:hover{ transform:translateY(-3px) scale(1.04); }
+        @media(max-width:768px){ .floating-kakao{ bottom:18px; right:18px; } }
+
+        ::-webkit-scrollbar{ width:10px; height:10px; }
+        ::-webkit-scrollbar-thumb{ background:var(--hairline-strong); border-radius:5px; border:2px solid var(--canvas); }
+        .whitespace-pre-wrap{ white-space:pre-wrap; }
+    </style>
+</head>
+<body class="canvas-glow">
+
+    <nav class="sticky top-0 z-40" style="background:rgba(1,1,2,0.72); backdrop-filter:blur(14px); border-bottom:1px solid var(--hairline);">
+        <div class="max-w-7xl mx-auto px-5 md:px-6 h-14 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5 select-none">
+                <img src="icon3.png" alt="SAD 공격대" class="w-8 h-8 object-contain rounded-lg">
+                <span class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px;">SAD 공격대</span>
+            </a>
+            <a href="index.html" class="btn-secondary text-sm px-3.5 py-2 flex items-center gap-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                홈으로
+            </a>
+        </div>
+    </nav>
+
+    <main class="relative z-10 max-w-7xl mx-auto px-5 md:px-6 pt-14 md:pt-16 pb-24">
+
+        <header class="text-center mb-12">
+            <p class="eyebrow mb-4">Guest Application</p>
+            <h1 class="font-display font-semibold tracking-display" style="color:var(--ink); font-size:clamp(32px,6vw,52px); line-height:1.05;">손님 신청</h1>
+            <p class="mt-5 mx-auto max-w-lg" style="color:var(--ink-subtle); font-size:16px; line-height:1.6;">아래 일정에서 원하는 날짜를 확인하고, 카카오톡으로 편하게 문의해 주세요.</p>
+            <div class="mt-7 flex justify-center">
+                <a href="https://open.kakao.com/o/svRS729e" target="_blank" rel="noopener" class="btn-kakao px-7 py-3.5 text-base flex items-center gap-2.5">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
+                    손님 문의 / 신청하기
+                </a>
+            </div>
+        </header>
+
+        <section class="mb-12">
+            <div class="hidden md:grid grid-cols-7 gap-3 mb-3 text-center font-display font-semibold" style="font-size:13px; letter-spacing:0.04em;">
+                <div style="color:var(--ink-subtle);">목</div><div style="color:var(--ink-subtle);">금</div><div style="color:var(--sat);">토</div>
+                <div style="color:var(--sun);">일</div><div style="color:var(--ink-subtle);">월</div><div style="color:var(--ink-subtle);">화</div><div style="color:var(--ink-subtle);">수</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-1 md:grid-cols-7 gap-3"></div>
+        </section>
+
+        <section class="lin-panel p-6 md:p-8">
+            <div class="flex items-center gap-2.5 mb-6 pb-5" style="border-bottom:1px solid var(--hairline);">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5.08V2M11 22v-3.08M3 11H6M2 16h4M18 11h4M21 6h-5"/><rect x="6" y="8" width="12" height="8" rx="2"/></svg>
+                <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:20px;">공격대 통합 룰 안내</h2>
+            </div>
+            <div id="noticeContainer" class="space-y-5" style="font-size:14.5px; color:var(--ink-muted);"></div>
+        </section>
+    </main>
+
+    <div class="floating-kakao" onclick="window.open('https://open.kakao.com/o/svRS729e', '_blank')" title="카카오톡 문의">
+        <div style="background-color:var(--kakao); border-radius:18px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+            <svg style="width:28px; height:28px;" viewBox="0 0 24 24" fill="#191600"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_ioAH2ZOtFbUvJeIaYR2M_ibeiZNk4ZU",
+            authDomain: "abandoneddogs-43520.firebaseapp.com",
+            projectId: "abandoneddogs-43520",
+            storageBucket: "abandoneddogs-43520.firebasestorage.app",
+            messagingSenderId: "364257611064",
+            appId: "1:364257611064:web:12f68f5f9d27bda16a45cd"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let globalConfig = { guestTypes: [] };
+        let noticesData = {};
+        let partiesData = [];
+        let hasScrolled = false;
+
+        function toLocalISOString(date) {
+            let pad = function(num) { return (num < 10 ? '0' : '') + num; };
+            return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+        }
+
+        const configRef = doc(db, "admin", "globalConfig");
+        onSnapshot(configRef, (snap) => {
+            if(snap.exists()) {
+                globalConfig = snap.data();
+                if(!globalConfig.guestTypes) globalConfig.guestTypes = [];
+                renderNotices();
+                renderCalendar();
+            }
+        });
+
+        const noticesRef = doc(db, "admin", "notices");
+        onSnapshot(noticesRef, (snap) => {
+            if(snap.exists()) {
+                noticesData = snap.data();
+                renderNotices();
+            }
+        });
+
+        function renderNotices() {
+            const container = document.getElementById('noticeContainer');
+            if(!container) return;
+            let html = '';
+
+            if(noticesData.partyDesc) {
+                html += `<div style="background:var(--s2); border:1px solid var(--hairline); border-radius:12px; padding:18px 20px;">
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px; margin-bottom:8px;">파티 기본 설명</h3>
+                    <p class="whitespace-pre-wrap" style="color:var(--ink-muted); line-height:1.65;">${noticesData.partyDesc}</p>
+                </div>`;
+            }
+
+            if(globalConfig.guestTypes) {
+                globalConfig.guestTypes.forEach(t => {
+                    if(noticesData[t.name]) {
+                        html += `
+                        <div style="padding:8px 0 8px 16px; border-left:2px solid ${t.color};">
+                            <h3 class="font-semibold" style="color:${t.color}; font-size:14.5px; margin-bottom:4px;">${t.name}</h3>
+                            <p class="whitespace-pre-wrap" style="color:var(--ink-subtle); line-height:1.6;">${noticesData[t.name]}</p>
+                        </div>`;
+                    }
+                });
+            }
+
+            container.innerHTML = html || '<p style="color:var(--ink-tertiary);">등록된 공지사항이 없습니다.</p>';
+        }
+
+        const partiesQuery = query(collection(db, "parties"));
+        onSnapshot(partiesQuery, (snapshot) => {
+            partiesData = [];
+            snapshot.forEach(doc => { partiesData.push({ id: doc.id, ...doc.data() }); });
+            renderCalendar();
+        });
+
+        function getBaseThursday() {
+            let d = new Date(); d.setHours(0,0,0,0);
+            let day = d.getDay();
+            let diff = (day >= 4) ? (day - 4) : (day + 3);
+            d.setDate(d.getDate() - diff);
+            return d;
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            const today = new Date(); today.setHours(0,0,0,0);
+            let startDate = getBaseThursday();
+            const days = ["일","월","화","수","목","금","토"];
+
+            for(let i = 0; i < 14; i++) {
+                let d = new Date(startDate);
+                d.setDate(startDate.getDate() + i);
+                let dateStr = toLocalISOString(d);
+                let isPast = d < today;
+                let todaysParties = partiesData.filter(p => p.date === dateStr).sort((a,b) => a.time.localeCompare(b.time));
+
+                let cell = document.createElement('div');
+                let dayColor = d.getDay() === 0 ? 'var(--sun)' : d.getDay() === 6 ? 'var(--sat)' : 'var(--ink-subtle)';
+                let dayString = days[d.getDay()];
+                let visibilityClass = (todaysParties.length === 0) ? 'hidden md:flex' : 'flex';
+
+                cell.id = `date-${dateStr}`;
+                cell.className = `slot-cell p-3 ${isPast ? 'past-date' : ''} ${visibilityClass}`;
+
+                let html = `<div class="flex justify-between items-center mb-3 pb-2.5" style="border-bottom:1px solid var(--hairline);">
+                                <span class="font-display font-semibold" style="font-size:14px; color:${dayColor};">${dateStr.slice(5)}<span style="color:var(--ink-tertiary); font-weight:500; margin-left:4px;">${dayString}</span></span>
+                            </div><div class="flex flex-col gap-2 flex-1">`;
+
+                todaysParties.forEach(p => {
+                    let openPositions = [];
+                    if (p.statuses && globalConfig.guestTypes) {
+                        globalConfig.guestTypes.forEach(t => {
+                            if (p.statuses[t.name] === true) {
+                                openPositions.push(`<span class="pos-box" style="color:${t.color}; border-color:${t.color}55; background-color:${t.color}14;">${t.name} 모집 중</span>`);
+                            }
+                        });
+                    }
+                    let displayHtml = openPositions.length > 0
+                        ? openPositions.join('')
+                        : `<span class="pos-box" style="color:#e0786a; border-color:rgba(224,120,106,0.35); background-color:rgba(224,120,106,0.08);">마감</span>`;
+
+                    let liveClass = isPast ? '' : 'party-chip-live';
+                    let actionClick = !isPast ? `onclick="window.open('https://open.kakao.com/o/svRS729e', '_blank')"` : '';
+
+                    html += `<div ${actionClick} class="party-chip ${liveClass} p-3 flex flex-col">
+                                <div class="font-display font-semibold tracking-display" style="color:var(--ink); font-size:18px; line-height:1;">${p.time}</div>
+                                <div class="mt-1.5 mb-3" style="color:var(--ink-subtle); font-size:12.5px;">${p.goal}</div>
+                                <div class="flex flex-col gap-1.5 pt-3" style="border-top:1px solid var(--hairline);">
+                                    ${displayHtml}
+                                </div>
+                            </div>`;
+                });
+
+                if(todaysParties.length === 0 && !isPast) {
+                    html += `<div class="flex-1 flex items-center justify-center py-5" style="color:var(--ink-tertiary); font-size:13px;">일정 없음</div>`;
+                }
+
+                html += `</div>`;
+                cell.innerHTML = html;
+                grid.appendChild(cell);
+            }
+
+            if (!hasScrolled) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetDate = urlParams.get('date');
+                if (targetDate) {
+                    const targetEl = document.getElementById(`date-${targetDate}`);
+                    if (targetEl) {
+                        setTimeout(() => {
+                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetEl.style.boxShadow = '0 0 0 1px var(--gold), 0 0 28px rgba(201,168,76,0.45)';
+                            targetEl.style.borderColor = 'var(--gold)';
+                            setTimeout(() => {
+                                targetEl.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.03)';
+                                targetEl.style.borderColor = 'var(--hairline)';
+                            }, 2200);
+                        }, 200);
+                    }
+                }
+                hasScrolled = true;
+            }
+        }
+    </script>
+
+</body>
+</html>

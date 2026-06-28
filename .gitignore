@@ -1,0 +1,9 @@
+# 작업용 백업 / 임시 미리보기 파일 — 배포 제외
+_backup_pre_linear/
+_prev_*.png
+_tune_*.png
+
+# OS / 에디터 부산물
+.DS_Store
+Thumbs.db
+*.tmp

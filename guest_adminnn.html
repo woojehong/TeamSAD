@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console — SAD 공격대</title>
+    <link rel="icon" type="image/png" href="icon3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: {
+                canvas:'#010102', s1:'#0f1011', s2:'#141516', s3:'#18191a',
+                hairline:'#23252a','hairline-strong':'#34343a',
+                ink:'#f7f8f8','ink-muted':'#d0d6e0','ink-subtle':'#8a8f98','ink-tertiary':'#62666d',
+                gold:'#C9A84C','gold-bright':'#E4C46A'
+            },
+            fontFamily:{ sans:['Pretendard','Inter','sans-serif'] }
+        }}};
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root{
+            --canvas:#010102; --s1:#0f1011; --s2:#141516; --s3:#18191a; --s4:#191a1b;
+            --hairline:#23252a; --hairline-strong:#34343a; --hairline-3:#3e3e44;
+            --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#aab0bb; --ink-tertiary:#82868f;
+            --gold:#C9A84C; --gold-bright:#E4C46A; --kakao:#FEE500;
+            --danger:#e0786a; --info:#5b9bd5; --success:#5ec27a;
+            --sat:#5b9bd5; --sun:#d97b7b;
+        }
+        *{ -webkit-tap-highlight-color:transparent; }
+        body{
+            font-family:'Pretendard','Inter',sans-serif;
+            background-color:var(--canvas); color:var(--ink-muted);
+            letter-spacing:-0.011em; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+        }
+        .font-display{ font-family:'Inter','Pretendard',sans-serif; }
+        .tracking-tight2{ letter-spacing:-0.02em; }
+        .tracking-display{ letter-spacing:-0.035em; }
+        .eyebrow{ font-size:12px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); }
+
+        .lin-panel{ background:var(--s1); border:1px solid var(--hairline); border-radius:16px; }
+        .lin-inset{ background:var(--canvas); border:1px solid var(--hairline); border-radius:12px; }
+
+        /* 버튼 시스템 */
+        .btn-primary{ background:var(--gold); color:#191400; font-weight:600; border-radius:8px; border:none; transition:.18s; }
+        .btn-primary:hover{ background:var(--gold-bright); }
+        .btn-ghost{ background:var(--s2); color:var(--ink); border:1px solid var(--hairline); border-radius:8px; transition:.18s; font-weight:500; }
+        .btn-ghost:hover{ background:var(--s3); border-color:var(--hairline-strong); }
+        .btn-danger{ background:rgba(224,120,106,0.1); color:var(--danger); border:1px solid rgba(224,120,106,0.3); border-radius:8px; transition:.18s; font-weight:600; }
+        .btn-danger:hover{ background:var(--danger); color:#1a0c0a; }
+        .btn-info{ background:rgba(91,155,213,0.1); color:var(--info); border:1px solid rgba(91,155,213,0.3); border-radius:8px; transition:.18s; font-weight:600; }
+        .btn-info:hover{ background:var(--info); color:#06121d; }
+
+        /* 입력 */
+        .fld{ background:var(--canvas); color:var(--ink); border:1px solid var(--hairline); border-radius:8px; transition:border-color .18s, box-shadow .18s; }
+        .fld::placeholder{ color:var(--ink-tertiary); }
+        input.fld:focus, textarea.fld:focus, select.fld:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+        textarea.fld{ resize:vertical; min-height:80px; }
+        input[type="number"].fld::-webkit-outer-spin-button, input[type="number"].fld::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+
+        input[type="color"]{ -webkit-appearance:none; border:none; width:34px; height:34px; border-radius:8px; overflow:hidden; cursor:pointer; padding:0; background:transparent; }
+        input[type="color"]::-webkit-color-swatch-wrapper{ padding:0; }
+        input[type="color"]::-webkit-color-swatch{ border:1px solid var(--hairline-strong); border-radius:8px; }
+
+        /* 셀 / 카드 */
+        .slot-cell{ background:var(--s1); border:1px solid var(--hairline); border-radius:12px; min-height:148px; display:flex; flex-direction:column; transition:border-color .2s, background-color .2s; box-shadow:inset 0 1px 0 rgba(255,255,255,0.03); }
+        .slot-cell:hover{ border-color:var(--hairline-strong); background:var(--s2); }
+        .past-date{ opacity:0.32; pointer-events:none; filter:grayscale(60%); }
+        .party-card{ background:var(--s2); border:1px solid var(--hairline); border-radius:10px; cursor:pointer; transition:border-color .2s, background-color .2s, transform .2s; }
+        .party-card:hover{ border-color:rgba(201,168,76,0.45); background:var(--s3); transform:translateY(-1px); }
+        .add-btn{ color:var(--ink-subtle); background:var(--s2); border:1px solid var(--hairline); border-radius:7px; transition:.18s; font-weight:600; line-height:1; }
+        .add-btn:hover{ color:#191400; background:var(--gold); border-color:var(--gold); }
+
+        .draggable-tag{ cursor:grab; transition:background-color .2s, opacity .2s, border-color .2s; }
+        .draggable-tag:active{ cursor:grabbing; }
+        .dragging{ opacity:0.45; background-color:rgba(201,168,76,0.18) !important; border-color:rgba(201,168,76,0.7) !important; color:var(--ink) !important; }
+
+        .info-box{ background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.18); border-radius:10px; padding:14px 16px; }
+        .template-btn{ background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.28); color:var(--gold-bright); border-radius:8px; transition:.18s; font-weight:600; }
+        .template-btn:hover{ background:rgba(201,168,76,0.16); border-color:rgba(201,168,76,0.5); }
+        .section-toggle:hover{ background:rgba(255,255,255,0.02); }
+        .modal-bg{ backdrop-filter:blur(6px); }
+
+        ::-webkit-scrollbar{ width:10px; height:10px; }
+        ::-webkit-scrollbar-track{ background:transparent; }
+        ::-webkit-scrollbar-thumb{ background:var(--hairline-strong); border-radius:5px; border:2px solid var(--canvas); }
+        ::-webkit-scrollbar-thumb:hover{ background:var(--hairline-3); }
+    </style>
+</head>
+<body class="p-4 md:p-8 pb-32">
+
+    <!-- 로그인 오버레이 -->
+    <div id="loginOverlay" class="fixed inset-0 z-[999] flex items-center justify-center" style="background-color:var(--canvas);">
+        <div class="w-full max-w-sm mx-4 lin-panel" style="padding:2.5rem;">
+            <div class="flex flex-col items-center mb-8">
+                <img src="icon3.png" alt="로고" class="w-16 h-16 object-contain mb-5">
+                <p class="eyebrow mb-2">Restricted</p>
+                <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:22px;">Admin Console</h2>
+                <p style="color:var(--ink-subtle); font-size:13px; margin-top:6px;">관리자 전용 구역입니다</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">비밀번호</label>
+                    <input type="password" id="loginPwInput" placeholder="비밀번호 입력" class="fld w-full px-3.5 py-3 text-sm" onkeydown="if(event.key==='Enter') doLogin()">
+                </div>
+                <p id="loginError" class="hidden" style="color:var(--danger); font-size:12px; font-weight:600;">비밀번호가 틀렸습니다.</p>
+                <button onclick="doLogin()" class="btn-primary w-full py-3.5 text-sm mt-1">입장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden max-w-7xl mx-auto space-y-7">
+
+        <header class="flex justify-between items-center pb-6" style="border-bottom:1px solid var(--hairline);">
+            <div class="flex items-center gap-3.5">
+                <img src="icon3.png" alt="로고" class="w-11 h-11 object-contain">
+                <div>
+                    <p class="eyebrow mb-0.5" style="font-size:11px;">Admin Console</p>
+                    <h1 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:22px; line-height:1;">관리자 컨트롤 센터</h1>
+                </div>
+            </div>
+            <a href="index.html" class="btn-ghost text-xs px-4 py-2.5 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                포털로
+            </a>
+        </header>
+
+        <!-- 프리셋 -->
+        <section class="lin-panel p-6 grid grid-cols-1 md:grid-cols-2 gap-7">
+            <div>
+                <h3 class="font-display font-semibold tracking-tight2 mb-1.5" style="color:var(--ink); font-size:16px;">파티 프리셋 · 목적</h3>
+                <p style="color:var(--ink-tertiary); font-size:12px; margin-bottom:14px;">태그를 드래그하여 순서를 변경할 수 있습니다.</p>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="goalInput" placeholder="예: 6신화, 7신화" class="fld flex-1 px-3 py-2.5 text-sm">
+                    <button onclick="addConfig('goals', 'goalInput')" class="btn-ghost px-5 text-sm">추가</button>
+                </div>
+                <div id="goalTags" class="flex flex-wrap gap-2 mt-3"></div>
+            </div>
+            <div>
+                <h3 class="font-display font-semibold tracking-tight2 mb-1.5" style="color:var(--ink); font-size:16px;">파티 프리셋 · 출발 시간</h3>
+                <p style="color:var(--ink-tertiary); font-size:12px; margin-bottom:14px;">태그를 드래그하여 순서를 변경할 수 있습니다.</p>
+                <div class="flex gap-2 mb-3">
+                    <input type="time" id="timeInput" class="fld flex-1 px-3 py-2.5 text-sm">
+                    <button onclick="addConfig('times', 'timeInput')" class="btn-ghost px-5 text-sm">추가</button>
+                </div>
+                <div id="timeTags" class="flex flex-wrap gap-2 mt-3"></div>
+            </div>
+        </section>
+
+        <!-- 일정 달력 -->
+        <section class="lin-panel p-6">
+            <div class="flex items-baseline gap-3 mb-5">
+                <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:20px;">일정 달력</h2>
+                <span style="color:var(--ink-subtle); font-size:13px;">파티 생성 · 3주 관리</span>
+            </div>
+            <div class="hidden md:grid grid-cols-7 gap-3 mb-3 text-center font-display font-semibold" style="font-size:13px; letter-spacing:0.04em;">
+                <div style="color:var(--ink-subtle);">목</div><div style="color:var(--ink-subtle);">금</div><div style="color:var(--sat);">토</div>
+                <div style="color:var(--sun);">일</div><div style="color:var(--ink-subtle);">월</div><div style="color:var(--ink-subtle);">화</div><div style="color:var(--ink-subtle);">수</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-2 md:grid-cols-7 gap-3"></div>
+        </section>
+
+        <!-- 공지 관리 -->
+        <section class="lin-panel p-6 md:p-8">
+            <div class="flex items-baseline gap-3 mb-6 pb-4" style="border-bottom:1px solid var(--hairline);">
+                <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:20px;">공통 공지 · 룰 관리</h2>
+                <span style="color:var(--ink-subtle); font-size:12px;">게스트 페이지 노출용</span>
+            </div>
+
+            <div class="lin-inset p-5 mb-6">
+                <h3 class="font-display font-semibold tracking-tight2 mb-3" style="color:var(--ink); font-size:15px;">기본 파티 설명</h3>
+                <textarea id="notice_partyDesc" style="min-height:120px;" placeholder="파티 진행 방식 및 기본 룰 입력" class="fld w-full p-4 text-sm"></textarea>
+                <div class="flex justify-end gap-2 mt-3">
+                    <button onclick="clearNotice('partyDesc', 'notice_partyDesc')" class="btn-danger px-4 py-2 text-xs">내용 지우기</button>
+                    <button onclick="saveNotice('partyDesc', 'notice_partyDesc')" class="btn-primary px-6 py-2 text-sm">저장</button>
+                </div>
+            </div>
+
+            <div id="dynamicNoticesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+        </section>
+
+        <!-- 손님 종류 관리 -->
+        <section class="lin-panel overflow-hidden">
+            <button onclick="toggleGuestManager()" class="section-toggle w-full p-6 text-left flex justify-between items-center transition focus:outline-none">
+                <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:20px;">손님 종류 · 우선순위 관리</h2>
+                <span id="guestManagerIcon" class="transition-transform duration-300" style="color:var(--gold); font-size:18px;">▼</span>
+            </button>
+
+            <div id="guestManagerContent" class="hidden p-6" style="border-top:1px solid var(--hairline); background:var(--canvas);">
+                <p class="info-box mb-6" style="color:var(--ink-muted); font-size:13px; line-height:1.6;">
+                    여기서 손님을 설정하면 모든 페이지(공지·현황판·파티생성)에 실시간 반영됩니다. 이름·약칭·색상을 변경한 후 꼭 [적용]을 눌러주세요.
+                </p>
+
+                <div class="flex flex-col md:flex-row gap-3 mb-6 lin-inset p-4 items-end">
+                    <div class="flex-1 w-full">
+                        <label class="block mb-1.5" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">손님 이름 (예: 디나르손)</label>
+                        <input type="text" id="newGuestName" class="fld w-full px-3 py-2.5 text-sm">
+                    </div>
+                    <div class="w-full md:w-24">
+                        <label class="block mb-1.5" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">약칭 (예: 디)</label>
+                        <input type="text" id="newGuestShort" class="fld w-full px-3 py-2.5 text-sm">
+                    </div>
+                    <div class="text-center">
+                        <label class="block mb-1.5" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">색상</label>
+                        <input type="color" id="newGuestColor" value="#C9A84C">
+                    </div>
+                    <button onclick="addGuestType()" class="btn-primary px-6 py-2.5 text-sm whitespace-nowrap" style="height:42px;">새 손님 추가</button>
+                </div>
+
+                <div id="guestTypesList" class="space-y-3"></div>
+            </div>
+        </section>
+
+    </div><!-- /mainContent -->
+
+    <!-- 파티 생성 모달 -->
+    <div id="createPartyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg" style="background:rgba(0,0,0,0.7);" onclick="handleOutsideClick(event, 'createPartyModal')">
+        <div class="lin-panel w-full max-w-md p-8 relative" onclick="event.stopPropagation()">
+            <h2 id="cpDateText" class="font-display font-semibold tracking-tight2 mb-6" style="color:var(--ink); font-size:20px;">파티 생성</h2>
+
+            <div class="mb-5">
+                <button onclick="loadLastWeekTemplate()" class="template-btn w-full py-2.5 text-sm flex items-center justify-center gap-2">지난 주 파티 템플릿 가져오기</button>
+                <div id="templateOptions" class="hidden mt-2 flex flex-col gap-2"></div>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="block mb-2" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">목적 (선택 또는 직접입력)</label>
+                    <select id="cpGoalSelect" onchange="syncInput('cpGoalSelect', 'cpGoalCustom')" class="fld w-full p-3 text-sm mb-2"></select>
+                    <input type="text" id="cpGoalCustom" placeholder="직접 입력" class="fld w-full p-3 text-sm">
+                </div>
+                <div>
+                    <label class="block mb-2" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">시간 (선택 또는 직접입력)</label>
+                    <select id="cpTimeSelect" onchange="syncInput('cpTimeSelect', 'cpTimeCustom')" class="fld w-full p-3 text-sm mb-2"></select>
+                    <input type="time" id="cpTimeCustom" class="fld w-full p-3 text-sm">
+                </div>
+                <div class="flex gap-3 mt-8">
+                    <button onclick="submitCreateParty()" class="btn-primary flex-1 py-3.5 text-sm">생성하기</button>
+                    <button onclick="closeModal('createPartyModal')" class="btn-ghost flex-1 py-3.5 text-sm">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 파티 관리 모달 -->
+    <div id="managePartyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 modal-bg" style="background:rgba(0,0,0,0.7);" onclick="handleOutsideClick(event, 'managePartyModal')">
+        <div class="lin-panel w-full max-w-2xl p-6 md:p-8 relative max-h-[95vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-6 pb-4" style="border-bottom:1px solid var(--hairline);">
+                <div>
+                    <h2 id="mpTitle" class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:20px;">파티 상세 관리</h2>
+                    <p id="mpSub" class="mt-2" style="color:var(--ink-subtle); font-size:14px;">총 업비: <span id="mpTotalGold" class="font-display font-semibold" style="color:var(--gold-bright); font-size:18px;">0</span> 만골</p>
+                </div>
+                <button onclick="deleteParty()" class="btn-danger px-4 py-2 text-sm">파티 폭파</button>
+            </div>
+
+            <input type="hidden" id="mpPartyId">
+
+            <div class="mb-6 lin-inset p-5">
+                <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">파티 정보 수정</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <div>
+                        <label class="block mb-1.5" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">목적 수정 (예: 7신화)</label>
+                        <input type="text" id="mpGoalInput" class="fld w-full px-3 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block mb-1.5" style="color:var(--ink-subtle); font-size:12px; font-weight:600;">출발 시간 수정</label>
+                        <div class="flex gap-2">
+                            <input type="time" id="mpTimeInput" class="fld flex-1 px-3 py-2.5 text-sm">
+                            <button onclick="updatePartyInfo()" class="btn-info px-4 text-sm whitespace-nowrap">변경 저장</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6 lin-inset p-5">
+                <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">모집 상태 관리</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="statusToggles"></div>
+            </div>
+
+            <div class="mb-6 lin-inset p-5" id="guestInputSection">
+                <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">손님 정보 입력</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
+                    <select id="gType" class="fld p-2.5 text-sm"></select>
+                    <input type="text" id="gName" placeholder="캐릭명" class="fld p-2.5 text-sm col-span-1 md:col-span-2">
+                    <input type="number" id="gGold" placeholder="업비 (숫자만)" min="0" class="fld p-2.5 text-sm col-span-2">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <input type="text" id="gNote" placeholder="비고" class="fld p-2.5 text-sm">
+                    <input type="text" id="gMemo" placeholder="특이사항" class="fld p-2.5 text-sm">
+                </div>
+                <button id="guestSubmitBtn" onclick="addOrEditGuest()" class="btn-primary w-full py-3.5 text-sm">등록하기</button>
+            </div>
+
+            <div>
+                <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">등록된 손님 목록</h3>
+                <div id="guestList" class="space-y-3"></div>
+            </div>
+
+            <button onclick="closeModal('managePartyModal')" class="btn-ghost w-full mt-8 py-3.5 text-sm">닫기</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_ioAH2ZOtFbUvJeIaYR2M_ibeiZNk4ZU",
+            authDomain: "abandoneddogs-43520.firebaseapp.com",
+            projectId: "abandoneddogs-43520",
+            storageBucket: "abandoneddogs-43520.firebasestorage.app",
+            messagingSenderId: "364257611064",
+            appId: "1:364257611064:web:12f68f5f9d27bda16a45cd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const existingUser = await new Promise(resolve => onAuthStateChanged(auth, resolve));
+
+        if (existingUser) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContent').classList.remove('hidden');
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
+
+        window.doLogin = async () => {
+            const pw = document.getElementById('loginPwInput').value;
+            const errEl = document.getElementById('loginError');
+            errEl.classList.add('hidden');
+            if (!pw) return;
+            try {
+                await signInWithEmailAndPassword(auth, "admin@abandoneddogs.com", pw);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContent').classList.remove('hidden');
+            } catch(e) {
+                errEl.classList.remove('hidden');
+                document.getElementById('loginPwInput').value = '';
+                document.getElementById('loginPwInput').focus();
+            }
+        };
+
+        let globalConfig = { goals: [], times: [], guestTypes: [] };
+        let noticesData = {};
+        let partiesData = [];
+        let currentManageDate = "";
+        let editingGuestIndex = -1;
+
+        const defaultGuestTypes = [
+            { name: "깡손님", short: "깡", color: "#fb923c" },
+            { name: "업적손님", short: "업", color: "#c084fc" },
+            { name: "탈것손님", short: "탈", color: "#e5e7eb" },
+            { name: "주사위손님", short: "주", color: "#4ade80" }
+        ];
+
+        function toLocalISOString(date) {
+            let pad = function(num) { return (num < 10 ? '0' : '') + num; };
+            return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+        }
+
+        function getBaseThursday() {
+            let d = new Date(); d.setHours(0,0,0,0);
+            let day = d.getDay();
+            let diff = (day >= 4) ? (day - 4) : (day + 3);
+            d.setDate(d.getDate() - diff);
+            return d;
+        }
+
+        const configRef = doc(db, "admin", "globalConfig");
+        onSnapshot(configRef, (snap) => {
+            if(snap.exists()) {
+                globalConfig = snap.data();
+                if(!globalConfig.goals) globalConfig.goals = [];
+                if(!globalConfig.times) globalConfig.times = [];
+                if(!globalConfig.guestTypes || globalConfig.guestTypes.length === 0) {
+                    globalConfig.guestTypes = defaultGuestTypes;
+                    updateDoc(configRef, { guestTypes: defaultGuestTypes });
+                }
+                renderConfigUI();
+                renderGuestTypesManager();
+                renderNoticesUI();
+            } else {
+                setDoc(configRef, { goals: ["6신화", "7신화", "올신화"], times: ["14:00", "20:00"], guestTypes: defaultGuestTypes });
+            }
+        });
+
+        const noticesRef = doc(db, "admin", "notices");
+        onSnapshot(noticesRef, (snap) => {
+            if(snap.exists()) {
+                noticesData = snap.data();
+                if(document.getElementById('notice_partyDesc')) document.getElementById('notice_partyDesc').value = noticesData.partyDesc || "";
+                renderNoticesUI();
+            } else {
+                setDoc(noticesRef, { partyDesc: "" });
+            }
+        });
+
+        const partiesQuery = query(collection(db, "parties"));
+        onSnapshot(partiesQuery, (snapshot) => {
+            partiesData = [];
+            snapshot.forEach(doc => { partiesData.push({ id: doc.id, ...doc.data() }); });
+            renderCalendar();
+
+            const openPartyId = document.getElementById('mpPartyId').value;
+            if(openPartyId && !document.getElementById('managePartyModal').classList.contains('hidden')) {
+                const updatedParty = partiesData.find(p => p.id === openPartyId);
+                if(updatedParty) renderManageModalDetails(updatedParty);
+                else closeModal('managePartyModal');
+            }
+        });
+
+        function renderConfigUI() {
+            setupDragAndDropStr('goalTags', globalConfig.goals, 'goals');
+            setupDragAndDropStr('timeTags', globalConfig.times, 'times');
+            document.getElementById('cpGoalSelect').innerHTML = `<option value="">--선택--</option>` + globalConfig.goals.map(g => `<option value="${g}">${g}</option>`).join('');
+            document.getElementById('cpTimeSelect').innerHTML = `<option value="">--선택--</option>` + globalConfig.times.map(t => `<option value="${t}">${t}</option>`).join('');
+            document.getElementById('gType').innerHTML = globalConfig.guestTypes.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+        }
+
+        function renderNoticesUI() {
+            const container = document.getElementById('dynamicNoticesContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            globalConfig.guestTypes.forEach(t => {
+                const val = noticesData[t.name] || "";
+                container.innerHTML += `
+                    <div class="lin-inset p-5 relative">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-2.5 h-2.5 rounded-full" style="background-color:${t.color}"></span>
+                            <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px;">${t.name} <span style="color:var(--ink-tertiary); font-weight:400; font-size:12px;">(${t.short})</span></h3>
+                        </div>
+                        <textarea id="notice_${t.name}" placeholder="${t.name} 자격 및 룰 입력" class="fld w-full p-4 text-sm" style="border-left:3px solid ${t.color};">${val}</textarea>
+                        <div class="flex justify-end gap-2 mt-3">
+                            <button onclick="clearNotice('${t.name}', 'notice_${t.name}')" class="btn-danger px-4 py-2 text-xs">지우기</button>
+                            <button onclick="saveNotice('${t.name}', 'notice_${t.name}')" class="btn-ghost px-5 py-2 text-xs">저장</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderGuestTypesManager() {
+            const list = document.getElementById('guestTypesList');
+            list.innerHTML = '';
+            globalConfig.guestTypes.forEach((t, index) => {
+                const item = document.createElement('div');
+                item.className = 'draggable-tag lin-inset p-3 flex flex-col md:flex-row items-center gap-3';
+                item.draggable = true;
+                item.dataset.index = index;
+                item.innerHTML = `
+                    <div class="flex items-center gap-3 w-full md:w-auto md:flex-1">
+                        <span style="color:var(--ink-tertiary); cursor:grab; font-size:16px;" class="px-1.5">☰</span>
+                        <div class="flex-1">
+                            <input type="text" id="editName_${index}" value="${t.name}" class="fld w-full px-3 py-2 text-sm" style="font-weight:600;">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <div class="flex items-center gap-2">
+                            <span style="color:var(--ink-subtle); font-size:12px;">약칭</span>
+                            <input type="text" id="editShort_${index}" value="${t.short}" class="fld w-12 text-center px-2 py-2 text-sm">
+                        </div>
+                        <input type="color" id="editColor_${index}" value="${t.color}">
+                        <button onclick="updateGuestType(${index})" class="btn-info px-3 py-2 text-xs">적용</button>
+                        <button onclick="deleteGuestType(${index}, '${t.name}')" class="btn-danger px-3 py-2 text-xs">삭제</button>
+                    </div>
+                `;
+                item.addEventListener('dragstart', (e) => { item.classList.add('dragging'); e.dataTransfer.setData('text/plain', index); });
+                item.addEventListener('dragend', () => item.classList.remove('dragging'));
+                list.appendChild(item);
+            });
+
+            list.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingItem = list.querySelector('.dragging');
+                if(!draggingItem) return;
+                const siblings = [...list.querySelectorAll('.draggable-tag:not(.dragging)')];
+                const nextSibling = siblings.find(sibling => e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2);
+                list.insertBefore(draggingItem, nextSibling);
+            });
+
+            list.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                const tags = [...list.querySelectorAll('.draggable-tag')];
+                const newOrder = tags.map(tag => globalConfig.guestTypes[tag.dataset.index]);
+                await updateDoc(configRef, { guestTypes: newOrder });
+            });
+        }
+
+        window.toggleGuestManager = () => {
+            const content = document.getElementById('guestManagerContent');
+            const icon = document.getElementById('guestManagerIcon');
+            content.classList.toggle('hidden');
+            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        };
+
+        window.addGuestType = async () => {
+            const name = document.getElementById('newGuestName').value.trim();
+            const short = document.getElementById('newGuestShort').value.trim();
+            const color = document.getElementById('newGuestColor').value;
+            if(!name || !short) return alert("이름과 약칭을 모두 입력해주세요.");
+            if(globalConfig.guestTypes.find(t => t.name === name)) return alert("이미 존재하는 손님 이름입니다.");
+            const newArray = [...globalConfig.guestTypes, { name, short, color }];
+            await updateDoc(configRef, { guestTypes: newArray });
+            document.getElementById('newGuestName').value = '';
+            document.getElementById('newGuestShort').value = '';
+        };
+
+        window.updateGuestType = async (index) => {
+            const name = document.getElementById(`editName_${index}`).value.trim();
+            const short = document.getElementById(`editShort_${index}`).value.trim();
+            const color = document.getElementById(`editColor_${index}`).value;
+            if(!name || !short) return alert("이름과 약칭을 모두 입력해주세요.");
+            let updatedArray = [...globalConfig.guestTypes];
+            updatedArray[index].name = name;
+            updatedArray[index].short = short;
+            updatedArray[index].color = color;
+            await updateDoc(configRef, { guestTypes: updatedArray });
+            alert("변경사항이 성공적으로 적용되었습니다.");
+        };
+
+        window.deleteGuestType = async (index, name) => {
+            if(!confirm(`'${name}'을(를) 정말 삭제하시겠습니까?\n(기존 파티 기록의 이름은 보존됩니다.)`)) return;
+            let updatedArray = globalConfig.guestTypes.filter((_, i) => i !== index);
+            await updateDoc(configRef, { guestTypes: updatedArray });
+        };
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            const today = new Date(); today.setHours(0,0,0,0);
+            let startDate = getBaseThursday();
+            const days = ["일","월","화","수","목","금","토"];
+
+            for(let i = 0; i < 21; i++) {
+                let d = new Date(startDate);
+                d.setDate(startDate.getDate() + i);
+                let dateStr = toLocalISOString(d);
+                let isPast = d < today;
+                let todaysParties = partiesData.filter(p => p.date === dateStr).sort((a,b) => a.time.localeCompare(b.time));
+                let canAddMore = todaysParties.length < 2;
+
+                let cell = document.createElement('div');
+                cell.className = `slot-cell p-3 relative ${isPast ? 'past-date' : ''}`;
+                let dayColor = d.getDay() === 0 ? 'var(--sun)' : d.getDay() === 6 ? 'var(--sat)' : 'var(--ink-subtle)';
+
+                let html = `<div class="flex justify-between items-center mb-3 pb-2" style="border-bottom:1px solid var(--hairline);">
+                                <span class="font-display font-semibold" style="font-size:14px; color:${dayColor};">
+                                    <span class="md:hidden">${days[d.getDay()]} </span>${dateStr.slice(5)}
+                                </span>
+                                ${canAddMore ? `<button onclick="openCreateModal('${dateStr}')" class="add-btn px-2.5 py-0.5">+</button>` : ''}
+                            </div><div class="flex flex-col gap-2 flex-1">`;
+
+                todaysParties.forEach(p => {
+                    let summaryMap = {};
+                    (p.guests || []).forEach(g => { summaryMap[g.type] = (summaryMap[g.type] || 0) + 1; });
+                    let summaryHtml = '';
+                    for (const [gType, count] of Object.entries(summaryMap)) {
+                        const tInfo = globalConfig.guestTypes.find(t => t.name === gType) || { short: gType.charAt(0), color: "#8a8f98" };
+                        summaryHtml += `<span class="px-1.5 py-0.5 rounded" style="color:${tInfo.color}; border:1px solid ${tInfo.color}55; background:${tInfo.color}14; font-size:10px; font-weight:600;">${count}${tInfo.short}</span> `;
+                    }
+                    if(summaryHtml === '') summaryHtml = `<span class="px-1.5 py-0.5 rounded" style="color:var(--ink-tertiary); border:1px solid var(--hairline); font-size:10px;">손님 없음</span>`;
+
+                    html += `
+                        <div onclick="openManageModal('${p.id}')" class="party-card p-3">
+                            <div class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px;">${p.time} <span style="color:var(--gold); font-size:12px; font-weight:500; margin-left:4px;">${p.goal}</span></div>
+                            <div class="flex flex-wrap gap-1 mt-2">${summaryHtml}</div>
+                        </div>`;
+                });
+
+                html += `</div>`;
+                cell.innerHTML = html;
+                grid.appendChild(cell);
+            }
+        }
+
+        window.loadLastWeekTemplate = () => {
+            const currentDate = new Date(currentManageDate);
+            const lastWeekDate = new Date(currentDate);
+            lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+            const lastWeekStr = toLocalISOString(lastWeekDate);
+
+            const lastWeekParties = partiesData.filter(p => p.date === lastWeekStr);
+            const optionsDiv = document.getElementById('templateOptions');
+
+            if(lastWeekParties.length === 0) {
+                alert("지난 주 해당 날짜에 파티가 없어요.");
+                return;
+            }
+
+            if(lastWeekParties.length === 1) {
+                document.getElementById('cpGoalCustom').value = lastWeekParties[0].goal;
+                document.getElementById('cpTimeCustom').value = lastWeekParties[0].time;
+                optionsDiv.classList.add('hidden');
+                return;
+            }
+
+            optionsDiv.innerHTML = '';
+            lastWeekParties.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'template-btn w-full py-2 px-3 text-sm text-left';
+                btn.innerHTML = `${p.time} / ${p.goal}`;
+                btn.onclick = () => {
+                    document.getElementById('cpGoalCustom').value = p.goal;
+                    document.getElementById('cpTimeCustom').value = p.time;
+                    optionsDiv.classList.add('hidden');
+                };
+                optionsDiv.appendChild(btn);
+            });
+            optionsDiv.classList.remove('hidden');
+        };
+
+        window.submitCreateParty = async () => {
+            const goal = document.getElementById('cpGoalCustom').value.trim();
+            const time = document.getElementById('cpTimeCustom').value.trim();
+            if(!goal || !time) return alert("목적과 시간을 입력해주세요.");
+
+            const freshSnap = await getDoc(configRef);
+            const freshGuestTypes = (freshSnap.exists() && freshSnap.data().guestTypes) ? freshSnap.data().guestTypes : [];
+
+            const isOlsin = goal.startsWith("올신");
+            let initialStatuses = {};
+            freshGuestTypes.forEach(t => {
+                if (isOlsin) {
+                    initialStatuses[t.name] = true;
+                } else {
+                    initialStatuses[t.name] = !t.name.includes("탈");
+                }
+            });
+
+            await addDoc(collection(db, "parties"), {
+                date: currentManageDate, time: time, goal: goal, guests: [], statuses: initialStatuses
+            });
+            closeModal('createPartyModal');
+        };
+
+        function renderManageModalDetails(p) {
+            document.getElementById('mpTitle').innerText = `${p.date.slice(5)} [${p.time}] ${p.goal}`;
+            let totalGold = (p.guests || []).reduce((sum, g) => sum + Number(g.gold || 0), 0);
+            document.getElementById('mpTotalGold').innerText = totalGold.toLocaleString();
+            document.getElementById('mpGoalInput').value = p.goal || "";
+            document.getElementById('mpTimeInput').value = p.time || "";
+
+            let statusHtml = '';
+            globalConfig.guestTypes.forEach(t => {
+                let isOpen = p.statuses && p.statuses[t.name] === true;
+                let style = isOpen
+                    ? "color:var(--success); border-color:rgba(94,194,122,0.35); background:rgba(94,194,122,0.1);"
+                    : "color:var(--danger); border-color:rgba(224,120,106,0.3); background:rgba(224,120,106,0.08);";
+                let text = isOpen ? "지원가능" : "마감";
+                statusHtml += `<button onclick="toggleStatus('${p.id}', '${t.name}', ${!isOpen})" style="${style}" class="border py-2.5 rounded-lg text-sm font-semibold transition">${t.name}: ${text}</button>`;
+            });
+            document.getElementById('statusToggles').innerHTML = statusHtml;
+
+            let guestHtml = '';
+            if(!p.guests || p.guests.length === 0) {
+                guestHtml = '<p class="text-center py-4" style="color:var(--ink-tertiary); font-size:14px;">등록된 손님이 없습니다.</p>';
+            } else {
+                p.guests.forEach((g, index) => {
+                    const tInfo = globalConfig.guestTypes.find(t => t.name === g.type) || { color: "#8a8f98" };
+                    guestHtml += `
+                    <div class="lin-inset p-4 flex justify-between items-center relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0" style="width:3px; background-color:${tInfo.color}"></div>
+                        <div class="pl-3">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="px-2 py-0.5 rounded" style="font-size:10px; font-weight:700; color:#111; background-color:${tInfo.color}">${g.type}</span>
+                                <span class="font-display font-semibold" style="color:var(--ink); font-size:16px;">${g.name}</span>
+                                <span class="font-display font-semibold" style="color:var(--gold-bright); font-size:13px;">${Number(g.gold).toLocaleString()}만골</span>
+                            </div>
+                            <div style="color:var(--ink-tertiary); font-size:12px;">비고: ${g.note || '-'} · 특이사항: ${g.memo || '-'}</div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="editGuest('${p.id}', ${index})" class="btn-info px-4 py-1.5 text-xs">수정</button>
+                            <button onclick="removeGuest('${p.id}', ${index})" class="btn-danger px-4 py-1.5 text-xs">삭제</button>
+                        </div>
+                    </div>`;
+                });
+            }
+            document.getElementById('guestList').innerHTML = guestHtml;
+        }
+
+        window.updatePartyInfo = async () => {
+            const partyId = document.getElementById('mpPartyId').value;
+            const newGoal = document.getElementById('mpGoalInput').value.trim();
+            const newTime = document.getElementById('mpTimeInput').value.trim();
+            if(!newGoal || !newTime) return alert("목적과 시간을 모두 입력해주세요.");
+            if(!confirm("파티 정보를 실시간으로 수정하시겠습니까?")) return;
+            await updateDoc(doc(db, "parties", partyId), { goal: newGoal, time: newTime });
+            alert("파티 정보가 성공적으로 수정되었습니다.");
+        };
+
+        window.saveNotice = async (field, inputId) => {
+            if(!confirm("진짜로 수정하시겠습니까?")) return;
+            const val = document.getElementById(inputId).value;
+            await updateDoc(noticesRef, { [field]: val });
+            alert("저장되었습니다.");
+        };
+
+        window.clearNotice = async (field, inputId) => {
+            if(!confirm("내용을 삭제하시겠습니까?")) return;
+            await updateDoc(noticesRef, { [field]: "" });
+            document.getElementById(inputId).value = "";
+        };
+
+        window.addConfig = async (type, inputId) => {
+            const val = document.getElementById(inputId).value.trim();
+            if(!val) return;
+            if(globalConfig[type].includes(val)) return alert("이미 존재합니다.");
+            await updateDoc(configRef, { [type]: [...globalConfig[type], val] });
+            document.getElementById(inputId).value = '';
+        };
+
+        window.removeConfig = async (type, val) => {
+            await updateDoc(configRef, { [type]: globalConfig[type].filter(i => i !== val) });
+        };
+
+        function setupDragAndDropStr(containerId, dataArray, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            dataArray.forEach((item, index) => {
+                const tag = document.createElement('span');
+                tag.className = 'draggable-tag flex items-center gap-2 px-3 py-1.5 text-xs';
+                tag.style.cssText = 'background:var(--s2); border:1px solid var(--hairline); border-radius:8px; color:var(--ink); font-weight:500;';
+                tag.draggable = true; tag.dataset.index = index;
+                tag.innerHTML = `<span style="color:var(--ink-tertiary);">☰</span> <span>${item}</span> <button onclick="event.stopPropagation(); removeConfig('${type}', '${item}')" style="color:var(--danger); margin-left:2px;">×</button>`;
+                tag.addEventListener('dragstart', (e) => { tag.classList.add('dragging'); e.dataTransfer.setData('text/plain', index); });
+                tag.addEventListener('dragend', () => tag.classList.remove('dragging'));
+                container.appendChild(tag);
+            });
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingItem = container.querySelector('.dragging');
+                if(!draggingItem) return;
+                const siblings = [...container.querySelectorAll('.draggable-tag:not(.dragging)')];
+                const nextSibling = siblings.find(sibling => e.clientX <= sibling.getBoundingClientRect().left + sibling.getBoundingClientRect().width / 2);
+                container.insertBefore(draggingItem, nextSibling);
+            });
+            container.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                const tags = [...container.querySelectorAll('.draggable-tag')];
+                await updateDoc(configRef, { [type]: tags.map(tag => dataArray[tag.dataset.index]) });
+            });
+        }
+
+        window.syncInput = (selectId, inputId) => {
+            const selectEl = document.getElementById(selectId);
+            const val = selectEl.value;
+            if(val) {
+                document.getElementById(inputId).value = val;
+                selectEl.value = "";
+            }
+        };
+
+        window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); };
+        window.handleOutsideClick = (e, modalId) => { if (e.target.classList.contains('modal-bg')) closeModal(modalId); };
+
+        window.openCreateModal = (dateStr) => {
+            currentManageDate = dateStr;
+            document.getElementById('cpDateText').innerText = `${dateStr.slice(5)} 파티 생성`;
+            document.getElementById('cpGoalCustom').value = '';
+            document.getElementById('cpTimeCustom').value = '';
+            document.getElementById('cpGoalSelect').value = '';
+            document.getElementById('cpTimeSelect').value = '';
+            document.getElementById('templateOptions').classList.add('hidden');
+            document.getElementById('createPartyModal').classList.remove('hidden');
+        };
+
+        window.openManageModal = (partyId) => {
+            const p = partiesData.find(x => x.id === partyId);
+            if(!p) return;
+            document.getElementById('mpPartyId').value = partyId;
+            resetGuestForm();
+            document.getElementById('managePartyModal').classList.remove('hidden');
+            renderManageModalDetails(p);
+        };
+
+        window.toggleStatus = async (partyId, typeName, newState) => {
+            const p = partiesData.find(x => x.id === partyId);
+            const updatedStatuses = { ...p.statuses, [typeName]: newState };
+            await updateDoc(doc(db, "parties", partyId), { statuses: updatedStatuses });
+        };
+
+        function resetGuestForm() {
+            document.getElementById('gName').value = '';
+            document.getElementById('gGold').value = '';
+            document.getElementById('gNote').value = '';
+            document.getElementById('gMemo').value = '';
+            const btn = document.getElementById('guestSubmitBtn');
+            btn.innerText = '등록하기';
+            btn.className = 'btn-primary w-full py-3.5 text-sm';
+            editingGuestIndex = -1;
+        }
+
+        window.addOrEditGuest = async () => {
+            const partyId = document.getElementById('mpPartyId').value;
+            const type = document.getElementById('gType').value;
+            const name = document.getElementById('gName').value.trim();
+            const gold = Math.max(0, Number(document.getElementById('gGold').value.trim()) || 0);
+            const note = document.getElementById('gNote').value.trim();
+            const memo = document.getElementById('gMemo').value.trim();
+
+            if(!name) return alert("캐릭명을 입력하세요.");
+            const p = partiesData.find(x => x.id === partyId);
+            let newGuests = [...(p.guests || [])];
+            const guestData = { type, name, gold: gold, note, memo };
+
+            if (editingGuestIndex > -1) newGuests[editingGuestIndex] = guestData;
+            else newGuests.push(guestData);
+
+            await updateDoc(doc(db, "parties", partyId), { guests: newGuests });
+            resetGuestForm();
+        };
+
+        window.editGuest = (partyId, index) => {
+            const p = partiesData.find(x => x.id === partyId);
+            const guest = p.guests[index];
+            document.getElementById('gType').value = guest.type;
+            document.getElementById('gName').value = guest.name;
+            document.getElementById('gGold').value = guest.gold;
+            document.getElementById('gNote').value = guest.note || '';
+            document.getElementById('gMemo').value = guest.memo || '';
+
+            const btn = document.getElementById('guestSubmitBtn');
+            btn.innerText = '수정 완료';
+            btn.className = 'btn-info w-full py-3.5 text-sm';
+            editingGuestIndex = index;
+
+            document.getElementById('guestInputSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
+        window.removeGuest = async (partyId, index) => {
+            if(!confirm("이 손님을 삭제하시겠습니까?")) return;
+            const p = partiesData.find(x => x.id === partyId);
+            const newGuests = p.guests.filter((_, i) => i !== index);
+            await updateDoc(doc(db, "parties", partyId), { guests: newGuests });
+            if(editingGuestIndex === index) resetGuestForm();
+            else if (editingGuestIndex > index) editingGuestIndex--;
+        };
+
+        window.deleteParty = async () => {
+            const partyId = document.getElementById('mpPartyId').value;
+            const partyTitle = document.getElementById('mpTitle').innerText;
+            if(!confirm(`파티를 삭제하시겠습니까?\n[ ${partyTitle} ]`)) return;
+            if(!confirm("마지막 확인입니다.\n삭제하면 손님 데이터까지 모두 사라지며 되돌릴 수 없습니다.\n정말 삭제하시겠습니까?")) return;
+            await deleteDoc(doc(db, "parties", partyId));
+            closeModal('managePartyModal');
+        };
+    </script>
+
+</body>
+</html>

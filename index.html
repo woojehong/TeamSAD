@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAD 공격대 — Raid Portal</title>
+    <link rel="icon" type="image/png" href="icon3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: {
+                    canvas: '#010102', s1: '#0f1011', s2: '#141516', s3: '#18191a',
+                    hairline: '#23252a', 'hairline-strong': '#34343a',
+                    ink: '#f7f8f8', 'ink-muted': '#d0d6e0', 'ink-subtle': '#8a8f98', 'ink-tertiary': '#62666d',
+                    gold: '#C9A84C', 'gold-bright': '#E4C46A'
+                },
+                fontFamily: { sans: ['Pretendard', 'Inter', 'sans-serif'] }
+            }}
+        };
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --canvas:#010102; --s1:#0f1011; --s2:#141516; --s3:#18191a; --s4:#191a1b;
+            --hairline:#23252a; --hairline-strong:#34343a; --hairline-3:#3e3e44;
+            --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#aab0bb; --ink-tertiary:#82868f;
+            --gold:#C9A84C; --gold-bright:#E4C46A; --gold-deep:#9a7d2e; --kakao:#FEE500;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family:'Pretendard','Inter',sans-serif;
+            background-color:var(--canvas); color:var(--ink-muted);
+            letter-spacing:-0.011em; min-height:100vh; overflow-x:hidden;
+            -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+        }
+        .font-display { font-family:'Inter','Pretendard',sans-serif; }
+        .tracking-display { letter-spacing:-0.035em; }
+        .tracking-tight2 { letter-spacing:-0.02em; }
+
+        /* 미묘한 상단 광채 — 캔버스에 깊이감 */
+        .canvas-glow::before {
+            content:''; position:fixed; top:-40%; left:50%; transform:translateX(-50%);
+            width:900px; height:600px; pointer-events:none; z-index:0;
+            background:radial-gradient(ellipse at center, rgba(201,168,76,0.06), transparent 65%);
+        }
+
+        /* 카드 — Linear 서피스 리프트 + 헤어라인 */
+        .lin-card {
+            background:var(--s1); border:1px solid var(--hairline); border-radius:12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+            transition: border-color .22s ease, background-color .22s ease, transform .22s ease;
+            position:relative;
+        }
+        .lin-card-hover { cursor:pointer; }
+        .lin-card-hover:hover { background:var(--s2); transform:translateY(-3px); }
+        .lin-card-gold:hover { border-color:rgba(201,168,76,0.45); }
+
+        .lin-panel { background:var(--s1); border:1px solid var(--hairline); border-radius:16px; }
+
+        .btn-secondary {
+            background:var(--s1); color:var(--ink); border:1px solid var(--hairline);
+            border-radius:8px; transition:.18s; font-weight:500;
+        }
+        .btn-secondary:hover { background:var(--s2); border-color:var(--hairline-strong); }
+        .btn-kakao { background:var(--kakao); color:#191600; font-weight:600; border-radius:8px; transition:filter .18s; }
+        .btn-kakao:hover { filter:brightness(0.94); }
+
+        .eyebrow { font-size:12px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); }
+
+        .status-box {
+            display:inline-flex; align-items:center; font-size:12px; font-weight:600;
+            padding:3px 9px; border-radius:6px; border:1px solid; letter-spacing:0;
+        }
+
+        .disabled-card { opacity:0.4; pointer-events:none; filter:grayscale(0.6); }
+
+        ::-webkit-scrollbar { width:10px; height:10px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:var(--hairline-strong); border-radius:5px; border:2px solid var(--canvas); }
+        ::-webkit-scrollbar-thumb:hover { background:var(--hairline-3); }
+
+        .floating-kakao {
+            position:fixed; bottom:28px; right:28px; z-index:9999; cursor:pointer;
+            transition:transform .25s ease;
+        }
+        .floating-kakao:hover { transform:translateY(-3px) scale(1.04); }
+        @media (max-width:768px) { .floating-kakao { bottom:18px; right:18px; } }
+
+        @keyframes fade-up { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation:fade-up .5s ease both; }
+    </style>
+</head>
+<body class="canvas-glow">
+
+    <!-- 상단 내비게이션 -->
+    <nav class="sticky top-0 z-40" style="background:rgba(1,1,2,0.72); backdrop-filter:blur(14px); border-bottom:1px solid var(--hairline);">
+        <div class="max-w-6xl mx-auto px-5 md:px-6 h-14 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5 select-none">
+                <img src="icon3.png" alt="SAD 공격대" class="w-8 h-8 object-contain rounded-lg">
+                <span class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px;">SAD 공격대</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <a href="introduction.html" class="hidden sm:flex btn-secondary text-sm px-3.5 py-2 items-center">공대 소개</a>
+                <a href="https://open.kakao.com/o/svRS729e" target="_blank" rel="noopener" class="btn-kakao text-sm px-3.5 py-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
+                    <span class="hidden sm:inline">카톡 문의</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 max-w-6xl mx-auto px-5 md:px-6 pt-16 md:pt-24 pb-24">
+
+        <!-- 히어로 -->
+        <header class="fade-up text-center mb-16 md:mb-20 select-none">
+            <div class="flex justify-center mb-7">
+                <img src="icon3.png" alt="SAD 공격대 엠블럼" class="w-24 h-24 md:w-28 md:h-28 object-contain">
+            </div>
+            <p class="eyebrow mb-4">Seeka's Abandoned Dogs</p>
+            <h1 class="font-display font-semibold tracking-display mx-auto" style="color:var(--ink); font-size:clamp(40px,8vw,72px); line-height:1.04;">SAD 공격대</h1>
+            <p class="mt-6 mx-auto max-w-xl" style="color:var(--ink-subtle); font-size:clamp(15px,2.4vw,18px); line-height:1.6;">
+                서로 도와가며, 기분 좋게. 베테랑과 젊은 피가 모인 정예 레이드 공격대입니다.
+            </p>
+        </header>
+
+        <!-- 메뉴 카드 -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
+            <div onclick="location.href='guest.html'" class="lin-card lin-card-hover lin-card-gold p-7 flex flex-col">
+                <div class="flex items-center justify-center w-11 h-11 rounded-xl mb-5" style="background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.22);">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 2.3c-.6.6-.2 1.7.7 1.7H17"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+                </div>
+                <h3 class="font-display font-semibold tracking-tight2 mb-1.5" style="color:var(--ink); font-size:19px;">손님 신청</h3>
+                <p style="color:var(--ink-subtle); font-size:13.5px; line-height:1.55;">일정 확인 및 카카오톡 문의</p>
+                <span class="mt-5 inline-flex items-center gap-1 text-sm font-medium" style="color:var(--gold);">바로가기
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </div>
+
+            <div onclick="location.href='introduction.html'" class="lin-card lin-card-hover lin-card-gold p-7 flex flex-col">
+                <div class="flex items-center justify-center w-11 h-11 rounded-xl mb-5" style="background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.22);">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <h3 class="font-display font-semibold tracking-tight2 mb-1.5" style="color:var(--ink); font-size:19px;">공격대 소개</h3>
+                <p style="color:var(--ink-subtle); font-size:13.5px; line-height:1.55;">SAD 공격대가 걸어온 길</p>
+                <span class="mt-5 inline-flex items-center gap-1 text-sm font-medium" style="color:var(--gold);">바로가기
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </div>
+
+            <div class="lin-card disabled-card p-7 flex flex-col">
+                <div class="flex items-center justify-center w-11 h-11 rounded-xl mb-5" style="background:var(--s2); border:1px solid var(--hairline);">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+                </div>
+                <h3 class="font-display font-semibold tracking-tight2 mb-1.5" style="color:var(--ink-subtle); font-size:19px;">공격대 지원</h3>
+                <p style="color:var(--ink-tertiary); font-size:13.5px; line-height:1.55;">현재 모집 중이지 않습니다</p>
+                <span class="mt-5 inline-flex items-center text-sm font-medium" style="color:var(--ink-tertiary);">모집 마감</span>
+            </div>
+        </section>
+
+        <!-- 현황판 -->
+        <section class="lin-panel p-6 md:p-8">
+            <div class="flex flex-wrap gap-3 justify-between items-center mb-7 pb-5" style="border-bottom:1px solid var(--hairline);">
+                <div>
+                    <p class="eyebrow mb-1.5">Upcoming</p>
+                    <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:22px;">예정된 일정 현황판</h2>
+                </div>
+                <a href="guest.html" class="btn-secondary text-sm px-4 py-2 flex items-center gap-1.5">
+                    전체 일정 보기
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
+            <div id="board-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+            <div id="board-empty" class="hidden text-center py-14" style="color:var(--ink-tertiary); font-size:14px;">예정된 일정이 없습니다.</div>
+        </section>
+
+        <!-- 푸터 -->
+        <footer class="text-center pt-16 mt-16 select-none" style="border-top:1px solid var(--hairline);">
+            <img src="icon3.png" alt="" class="w-9 h-9 object-contain rounded-lg mx-auto mb-4 opacity-60">
+            <p style="color:var(--ink-tertiary); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">© Seeka's Abandoned Dogs. All rights reserved.</p>
+        </footer>
+    </main>
+
+    <div class="floating-kakao" onclick="window.open('https://open.kakao.com/o/svRS729e', '_blank')" title="카카오톡 문의">
+        <div style="background-color:var(--kakao); border-radius:18px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+            <svg style="width:28px; height:28px;" viewBox="0 0 24 24" fill="#191600"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_ioAH2ZOtFbUvJeIaYR2M_ibeiZNk4ZU",
+            authDomain: "abandoneddogs-43520.firebaseapp.com",
+            projectId: "abandoneddogs-43520",
+            storageBucket: "abandoneddogs-43520.firebasestorage.app",
+            messagingSenderId: "364257611064",
+            appId: "1:364257611064:web:12f68f5f9d27bda16a45cd"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let globalConfig = { guestTypes: [] };
+        let partiesData = [];
+
+        function toLocalISOString(date) {
+            let pad = function(num) { return (num < 10 ? '0' : '') + num; };
+            return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+        }
+
+        const configRef = doc(db, "admin", "globalConfig");
+        onSnapshot(configRef, (snap) => {
+            if(snap.exists()) {
+                globalConfig = snap.data();
+                if(!globalConfig.guestTypes) globalConfig.guestTypes = [];
+                renderBoard();
+            }
+        });
+
+        onSnapshot(query(collection(db, "parties")), (snapshot) => {
+            partiesData = [];
+            snapshot.forEach(doc => partiesData.push({ id: doc.id, ...doc.data() }));
+            renderBoard();
+        });
+
+        function renderBoard() {
+            const boardGrid = document.getElementById('board-grid');
+            const emptyEl = document.getElementById('board-empty');
+            if(!boardGrid) return;
+            boardGrid.innerHTML = '';
+
+            const todayStr = toLocalISOString(new Date());
+            const upcoming = partiesData
+                .filter(p => p.date >= todayStr)
+                .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+                .slice(0, 6);
+
+            if(upcoming.length === 0) {
+                if(emptyEl) emptyEl.classList.remove('hidden');
+                return;
+            }
+            if(emptyEl) emptyEl.classList.add('hidden');
+
+            const days = ["일","월","화","수","목","금","토"];
+
+            upcoming.forEach(p => {
+                let openPositions = [];
+                if (p.statuses && globalConfig.guestTypes) {
+                    globalConfig.guestTypes.forEach(t => {
+                        if (p.statuses[t.name] === true) {
+                            openPositions.push(`<span class="status-box" style="color:${t.color}; border-color:${t.color}55; background-color:${t.color}14;">${t.name} 지원 가능</span>`);
+                        }
+                    });
+                }
+                let displayHtml = openPositions.length > 0
+                    ? openPositions.join('')
+                    : `<span class="status-box" style="color:#e0786a; border-color:rgba(224,120,106,0.35); background-color:rgba(224,120,106,0.08);">마감</span>`;
+
+                const d = new Date(p.date);
+
+                boardGrid.innerHTML += `
+                    <div class="lin-card lin-card-hover lin-card-gold p-5" onclick="location.href='guest.html?date=${p.date}'">
+                        <div class="flex items-baseline justify-between pb-3 mb-3" style="border-bottom:1px solid var(--hairline);">
+                            <span style="color:var(--ink); font-size:14px; font-weight:600;">${p.date.slice(5)} <span style="color:var(--ink-subtle); font-weight:500;">(${days[d.getDay()]})</span></span>
+                        </div>
+                        <div class="font-display font-semibold tracking-display" style="color:var(--ink); font-size:24px; line-height:1;">${p.time}</div>
+                        <div class="mt-2 mb-3.5" style="color:var(--ink-subtle); font-size:13px;">${p.goal}</div>
+                        <div class="flex flex-col items-start gap-1.5">${displayHtml}</div>
+                    </div>`;
+            });
+        }
+    </script>
+
+</body>
+</html>

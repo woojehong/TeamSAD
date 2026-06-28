@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공격대 소개 — SAD 공격대</title>
+    <link rel="icon" type="image/png" href="icon3.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: {
+                canvas:'#010102', s1:'#0f1011', s2:'#141516', s3:'#18191a',
+                hairline:'#23252a','hairline-strong':'#34343a',
+                ink:'#f7f8f8','ink-muted':'#d0d6e0','ink-subtle':'#8a8f98','ink-tertiary':'#62666d',
+                gold:'#C9A84C','gold-bright':'#E4C46A'
+            },
+            fontFamily:{ sans:['Pretendard','Inter','sans-serif'] }
+        }}};
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root{
+            --canvas:#010102; --s1:#0f1011; --s2:#141516; --s3:#18191a;
+            --hairline:#23252a; --hairline-strong:#34343a; --hairline-3:#3e3e44;
+            --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#aab0bb; --ink-tertiary:#82868f;
+            --gold:#C9A84C; --gold-bright:#E4C46A; --gold-deep:#9a7d2e; --kakao:#FEE500;
+            /* 시즌 시그니처 — 정보 전달용 유지 */
+            --s-dragon:#cdd3da; --s-tww:#f0883e; --s-mid:#9a7bd6;
+        }
+        *{ -webkit-tap-highlight-color:transparent; }
+        body{
+            font-family:'Pretendard','Inter',sans-serif;
+            background-color:var(--canvas); color:var(--ink-muted);
+            letter-spacing:-0.011em; min-height:100vh; overflow-x:hidden;
+            -webkit-font-smoothing:antialiased;
+        }
+        .font-display{ font-family:'Inter','Pretendard',sans-serif; }
+        .tracking-display{ letter-spacing:-0.035em; }
+        .tracking-tight2{ letter-spacing:-0.02em; }
+        .eyebrow{ font-size:12px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); }
+
+        .lin-panel{ background:var(--s1); border:1px solid var(--hairline); border-radius:16px; }
+        .lin-card{ background:var(--s1); border:1px solid var(--hairline); border-radius:12px; transition:border-color .22s ease, background-color .22s ease, transform .22s ease; }
+
+        .btn-secondary{ background:var(--s1); color:var(--ink); border:1px solid var(--hairline); border-radius:8px; transition:.18s; font-weight:500; }
+        .btn-secondary:hover{ background:var(--s2); border-color:var(--hairline-strong); }
+        .btn-kakao{ background:var(--kakao); color:#191600; font-weight:600; border-radius:8px; transition:filter .18s; }
+        .btn-kakao:hover{ filter:brightness(0.94); }
+
+        /* 탭 (Linear pill toggle) */
+        .tab-bar{ background:var(--s1); border:1px solid var(--hairline); border-radius:9999px; padding:4px; display:inline-flex; gap:2px; }
+        .tab-btn{ border:none; background:transparent; color:var(--ink-subtle); font-weight:500; font-size:14px; padding:8px 18px; border-radius:9999px; cursor:pointer; transition:.18s; white-space:nowrap; }
+        .tab-btn:hover{ color:var(--ink-muted); }
+        .tab-active{ background:var(--s3); color:var(--ink); box-shadow:inset 0 1px 0 rgba(255,255,255,0.05); }
+
+        .canvas-glow::before{
+            content:''; position:fixed; top:-40%; left:50%; transform:translateX(-50%);
+            width:900px; height:600px; pointer-events:none; z-index:0;
+            background:radial-gradient(ellipse at center, rgba(201,168,76,0.05), transparent 65%);
+        }
+
+        /* 타임라인 */
+        .tl-line{ border-left:1px solid var(--hairline-strong); }
+        .tl-dot{ background:var(--canvas); border:2px solid var(--gold); box-shadow:0 0 0 4px var(--canvas); }
+        .tl-dot-active{ background:var(--gold); border:2px solid var(--gold-bright); box-shadow:0 0 0 4px var(--canvas), 0 0 14px rgba(201,168,76,0.6); animation:dot-pulse 4s infinite ease-in-out; }
+        @keyframes dot-pulse{ 0%,100%{ box-shadow:0 0 0 4px var(--canvas), 0 0 8px rgba(201,168,76,0.4);} 50%{ box-shadow:0 0 0 4px var(--canvas), 0 0 18px rgba(201,168,76,0.85);} }
+
+        .season-badge{ display:inline-flex; align-items:center; font-size:11px; font-weight:700; letter-spacing:0.1em; padding:4px 11px; border-radius:6px; box-shadow:inset 0 1px 2px rgba(0,0,0,0.25); }
+        .sb-found{ color:#fff; background:linear-gradient(90deg,#374151,#111827); }
+        .sb-dragon{ color:#1f2937; background:linear-gradient(90deg,#d1d5db,#9ca3af); }
+        .sb-tww{ color:#fff; background:linear-gradient(90deg,#f97316,#b45309); }
+        .sb-mid{ color:#fff; background:linear-gradient(90deg,#6b21a8,#1e3a8a); }
+        /* CE 배너 확장팩별 글로우 — 구버전 복구 */
+        @keyframes pulse-silver{ 0%,100%{ box-shadow:0 0 6px rgba(209,213,219,.45); border-color:rgba(209,213,219,.55);} 50%{ box-shadow:0 0 20px rgba(209,213,219,.95); border-color:#ffffff;} }
+        @keyframes pulse-orange{ 0%,100%{ box-shadow:0 0 6px rgba(249,115,22,.45); border-color:rgba(249,115,22,.55);} 50%{ box-shadow:0 0 20px rgba(249,115,22,.95); border-color:#fb923c;} }
+        @keyframes pulse-void{ 0%,100%{ box-shadow:0 0 8px rgba(138,43,226,.45),0 0 18px rgba(67,24,120,.28); border-color:rgba(138,43,226,.65);} 50%{ box-shadow:0 0 26px rgba(138,43,226,.95),0 0 46px rgba(100,40,200,.55); border-color:#d8b4fe;} }
+        .glow-silver{ animation:pulse-silver 6.5s infinite ease-in-out; border-style:solid !important; }
+        .glow-orange{ animation:pulse-orange 6.5s infinite ease-in-out; border-style:solid !important; }
+        .glow-void{ animation:pulse-void 6.5s infinite ease-in-out; border-style:solid !important; }
+        .glow-void-dashed{ animation:pulse-void 6.5s infinite ease-in-out; border-style:dashed !important; }
+
+        .ce-banner{ display:block; width:100%; max-width:520px; height:auto; border-radius:10px; border:1px solid var(--hairline); transition:transform .3s ease, border-color .3s ease; }
+        .ce-banner:hover{ transform:translateY(-2px); border-color:var(--hairline-strong); }
+        .ce-coming{ max-width:520px; border:1px dashed var(--hairline-3); border-radius:10px; background:var(--s1); }
+
+        .cls-shaman{ color:#0070DE; } .cls-druid{ color:#FF7C0A; }
+
+        .floating-kakao{ position:fixed; bottom:28px; right:28px; z-index:9999; cursor:pointer; transition:transform .25s ease; }
+        .floating-kakao:hover{ transform:translateY(-3px) scale(1.04); }
+        @media(max-width:768px){ .floating-kakao{ bottom:18px; right:18px; } }
+
+        ::-webkit-scrollbar{ width:10px; height:10px; }
+        ::-webkit-scrollbar-thumb{ background:var(--hairline-strong); border-radius:5px; border:2px solid var(--canvas); }
+
+        @keyframes fade-up{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+        .fade-up{ animation:fade-up .45s ease both; }
+    </style>
+</head>
+<body class="canvas-glow">
+
+    <nav class="sticky top-0 z-40" style="background:rgba(1,1,2,0.72); backdrop-filter:blur(14px); border-bottom:1px solid var(--hairline);">
+        <div class="max-w-5xl mx-auto px-5 md:px-6 h-14 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5 select-none">
+                <img src="icon3.png" alt="SAD 공격대" class="w-8 h-8 object-contain rounded-lg">
+                <span class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px;">SAD 공격대</span>
+            </a>
+            <a href="index.html" class="btn-secondary text-sm px-3.5 py-2 flex items-center gap-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                홈으로
+            </a>
+        </div>
+    </nav>
+
+    <main class="relative z-10 max-w-5xl mx-auto px-5 md:px-6 pt-14 md:pt-20 pb-24">
+
+        <header class="text-center mb-10 select-none fade-up">
+            <p class="eyebrow mb-4">About the Guild</p>
+            <h1 class="font-display font-semibold tracking-display" style="color:var(--ink); font-size:clamp(34px,6vw,52px); line-height:1.05;">공격대 소개</h1>
+            <p class="mt-5 mx-auto max-w-lg" style="color:var(--ink-subtle); font-size:16px; line-height:1.6;">SAD 공격대가 걸어온 길과 우리가 일하는 방식.</p>
+        </header>
+
+        <!-- 탭바 -->
+        <div class="flex justify-center mb-12">
+            <div class="tab-bar">
+                <button class="tab-btn tab-active" onclick="showTab('tab-about', this)">소개</button>
+                <button class="tab-btn" onclick="showTab('tab-progress', this)">프로그레스</button>
+                <button class="tab-btn" onclick="showTab('tab-emblem', this)">엠블럼</button>
+            </div>
+        </div>
+
+        <!-- ===== 탭1: 소개 ===== -->
+        <section id="tab-about" class="tab-panel fade-up">
+            <div class="lin-panel overflow-hidden mb-8">
+                <img src="group.png" alt="SAD 공격대 단체사진" class="w-full h-auto object-cover" style="aspect-ratio:15/9;">
+            </div>
+
+            <div class="text-center mb-12">
+                <p class="font-display tracking-tight2" style="color:var(--ink); font-size:clamp(22px,4vw,32px); font-weight:600;">"서로 도와가면서 해요"</p>
+                <div class="h-px w-16 mx-auto mt-5" style="background:linear-gradient(90deg,transparent,var(--gold),transparent);"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4 mb-10">
+                <div class="lin-card p-6">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-lg mb-4" style="background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.22);">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2 mb-2" style="color:var(--ink); font-size:16px;">베테랑과 젊은 피의 융화</h3>
+                    <p style="color:var(--ink-subtle); font-size:14px; line-height:1.65;">명예의 전당과 최상위권을 경험한 베테랑, 그리고 뛰어난 피지컬의 20대 젊은 피가 모인 정예 공격대입니다. 실력은 날카롭되 분위기는 한없이 유합니다.</p>
+                </div>
+                <div class="lin-card p-6">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-lg mb-4" style="background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.22);">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2 mb-2" style="color:var(--ink); font-size:16px;">연장보다 조퇴를 사랑하는 효율</h3>
+                    <p style="color:var(--ink-subtle); font-size:14px; line-height:1.65;">주 1~2일의 한정된 시간에 최고 효율을 뽑습니다. 연장은커녕 쿨하게 조퇴하는 탓에 통계 사이트엔 5~7시간 공격대로 기록되는 유쾌한 일상을 즐깁니다.</p>
+                </div>
+                <div class="lin-card p-6">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-lg mb-4" style="background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.22);">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2 mb-2" style="color:var(--ink); font-size:16px;">현생 우선, 기분 좋은 '유기'</h3>
+                    <p style="color:var(--ink-subtle); font-size:14px; line-height:1.65;">더 높은 목표로 상위 공격대에 가는 공대원을 진심으로 응원하며 흔쾌히 보냅니다. 결혼·출산 등 현생의 중대사도 슬퍼하지 않습니다. 무엇보다 현생이 우선이니까요.</p>
+                </div>
+            </div>
+
+            <div class="lin-panel p-8 md:p-10 text-center">
+                <p style="color:var(--ink); font-size:clamp(15px,2.4vw,18px); line-height:1.75; font-weight:500;">
+                    좋은 일들로 떠나간 사람들을 축복하며 남겨진 '유기견'들이 모인 곳.<br class="hidden md:block">
+                    우리는 앞으로도 기분 좋게 서로를 유기하고, 또 유기 당하며 우리만의 즐거운 레이드를 이어갈 것입니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===== 탭2: 프로그레스 ===== -->
+        <section id="tab-progress" class="tab-panel hidden fade-up">
+            <div class="flex items-center justify-between flex-wrap gap-4 mb-10 pb-5" style="border-bottom:1px solid var(--hairline);">
+                <div>
+                    <p class="eyebrow mb-1.5">Progress</p>
+                    <h2 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:24px;">공격대 연혁</h2>
+                </div>
+                <p style="color:var(--ink-subtle); font-size:13px;">2023.05 — 현재 · 명예의 전당 주간 킬 보유</p>
+            </div>
+
+            <div class="tl-line relative pl-9 ml-2 space-y-12">
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-found">공격대 창설</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2023.05</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">두부킴 공격대(현 SAD 공격대) 결성</h3>
+                    <div class="mt-1" style="color:var(--ink-subtle); font-size:13.5px;">아제로스에서의 여정 시작</div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-dragon">용군단 2시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2023.09</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">어둠의 도가니 아베루스</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-shaman font-semibold">두부킴</span> · 주 1일(~4시간)</div>
+                    <img src="ce1.png" alt="아베루스 최정예" class="ce-banner glow-silver">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-dragon">용군단 3시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2024.04</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">꿈의 희망 아미드랏실</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-shaman font-semibold">두부킴</span> · 주 1일(~4시간)</div>
+                    <img src="ce2.png" alt="아미드랏실 최정예" class="ce-banner glow-silver">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-dragon">용군단 4시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2024.06</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">각성의 용군단 공격대</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-shaman font-semibold">두부킴</span> · 주 1일(~4시간)</div>
+                    <img src="ce0.png" alt="각성의 용군단 최정예" class="ce-banner glow-silver">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-tww">내부 전쟁 1시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2025.01</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">네룹아르 궁전</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-shaman font-semibold">두부킴</span> · 주 2일(~8시간)</div>
+                    <img src="ce3.png" alt="네룹아르 궁전 최정예" class="ce-banner glow-orange">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-tww">내부 전쟁 2시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2025.06</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">언더마인 해방전선</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-druid font-semibold">잠탱이</span> · 주 2일(~8시간)</div>
+                    <img src="ce4.png" alt="언더마인 최정예" class="ce-banner glow-orange">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-tww">내부 전쟁 3시즌</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">마나괴철로 종극점</h3>
+                    <div class="mt-1" style="color:var(--ink-tertiary); font-size:13.5px; font-weight:500;">시즌 휴공</div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-mid">한밤 1시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2026.03</span>
+                        <span class="season-badge" style="color:var(--gold-bright); border-color:rgba(201,168,76,0.4); background:rgba(201,168,76,0.1);">명예의 전당 주간 킬</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">꿈의 균열</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-druid font-semibold">잠탱이</span> · 주 2일(~8시간)</div>
+                    <img src="ce5.png" alt="꿈의 균열 최정예" class="ce-banner glow-void">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-mid">한밤 1시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2026.05</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">공허첨탑</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-druid font-semibold">잠탱이</span> · 주 2일(~8시간)</div>
+                    <img src="ce6.png" alt="공허첨탑 최정예" class="ce-banner glow-void">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-mid">한밤 1시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2026.06</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">쿠엘다나스 진격로</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-druid font-semibold">잠탱이</span> · 주 2일(~8시간)</div>
+                    <img src="ce7.png" alt="쿠엘다나스 진격로 최정예" class="ce-banner glow-void">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1 w-3 h-3 rounded-full tl-dot"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-mid">한밤 1.5시즌</span>
+                        <span style="color:var(--ink-tertiary); font-size:13px;">2026.06</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">진균나락</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-druid font-semibold">잠탱이</span> · 주 2일(~8시간)</div>
+                    <img src="ce8.png" alt="진균나락 최정예" class="ce-banner glow-void">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute -left-9 top-1.5 w-3 h-3 rounded-full tl-dot-active"></div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="season-badge sb-mid">한밤 2시즌</span>
+                        <span class="season-badge" style="color:#5ec27a; border-color:rgba(94,194,122,0.35); background:rgba(94,194,122,0.1);">공략 준비 중</span>
+                    </div>
+                    <h3 class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:18px;">맹독 심연</h3>
+                    <div class="mt-1 mb-4" style="color:var(--ink-subtle); font-size:13.5px;">공격대장 <span class="cls-druid font-semibold">잠탱이</span></div>
+                    <div class="ce-coming glow-void-dashed flex items-center justify-center" style="max-width:520px; aspect-ratio:520/92;">
+                        <p style="color:var(--ink-tertiary); font-size:12px; letter-spacing:0.18em; text-transform:uppercase; font-weight:600;">Coming Soon</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== 탭3: 엠블럼 ===== -->
+        <section id="tab-emblem" class="tab-panel hidden fade-up">
+            <div class="lin-panel p-10 md:p-16 flex flex-col items-center text-center mb-8">
+                <img src="icon3.png" alt="SAD 공격대 엠블럼" class="w-40 h-40 md:w-52 md:h-52 object-contain mb-8">
+                <p class="eyebrow mb-3">Guild Identity</p>
+                <h2 class="font-display font-semibold tracking-display mb-4" style="color:var(--ink); font-size:clamp(26px,5vw,40px);">SAD 공격대 엠블럼</h2>
+                <p class="max-w-md" style="color:var(--ink-subtle); font-size:15px; line-height:1.7;">원형 골드 링 안에서 골드 라인으로 그려진 강아지. 어둠 속에서도 또렷이 빛나는 우리의 표식입니다. 서로를 '유기'하고 또 맞이하는, 끈끈하게 이어진 우리만의 상징.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="lin-card p-6">
+                    <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">시그니처 컬러</h3>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-10 h-10 rounded-lg" style="background:#C9A84C; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1);"></span>
+                        <div>
+                            <div style="color:var(--ink); font-size:14px; font-weight:600;">Signature Gold</div>
+                            <div class="font-display" style="color:var(--ink-subtle); font-size:12px;">#C9A84C</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-10 h-10 rounded-lg" style="background:#010102; box-shadow:inset 0 0 0 1px var(--hairline-strong);"></span>
+                        <div>
+                            <div style="color:var(--ink); font-size:14px; font-weight:600;">Void Black</div>
+                            <div class="font-display" style="color:var(--ink-subtle); font-size:12px;">#010102</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lin-card p-6">
+                    <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">타이포그래피</h3>
+                    <p class="font-display mb-1" style="color:var(--ink); font-size:26px; font-weight:600; letter-spacing:-0.03em;">Abandoned Dogs</p>
+                    <p style="color:var(--ink); font-size:20px; font-weight:600;">SAD 공격대</p>
+                    <p class="mt-3" style="color:var(--ink-subtle); font-size:12.5px; line-height:1.6;">Inter · Pretendard — 음수 자간의 절제된 디스플레이.</p>
+                </div>
+
+                <div class="lin-card p-6">
+                    <h3 class="font-display font-semibold tracking-tight2 mb-4" style="color:var(--ink); font-size:15px;">사용 원칙</h3>
+                    <ul style="color:var(--ink-subtle); font-size:13.5px; line-height:1.8; list-style:none; padding:0; margin:0;">
+                        <li class="flex gap-2"><span style="color:var(--gold);">·</span> 어두운 배경 위에서 사용합니다.</li>
+                        <li class="flex gap-2"><span style="color:var(--gold);">·</span> 골드 링의 비율을 변형하지 않습니다.</li>
+                        <li class="flex gap-2"><span style="color:var(--gold);">·</span> 충분한 여백을 확보합니다.</li>
+                        <li class="flex gap-2"><span style="color:var(--gold);">·</span> 색상을 임의로 교체하지 않습니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center pt-16 mt-16 select-none" style="border-top:1px solid var(--hairline);">
+            <img src="icon3.png" alt="" class="w-9 h-9 object-contain rounded-lg mx-auto mb-4 opacity-60">
+            <p style="color:var(--ink-tertiary); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">© Seeka's Abandoned Dogs. All rights reserved.</p>
+        </footer>
+    </main>
+
+    <div class="floating-kakao" onclick="window.open('https://open.kakao.com/o/svRS729e', '_blank')" title="카카오톡 문의">
+        <div style="background-color:var(--kakao); border-radius:18px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+            <svg style="width:28px; height:28px;" viewBox="0 0 24 24" fill="#191600"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
+        </div>
+    </div>
+
+    <script>
+        function showTab(id, btn){
+            document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.add('hidden'); });
+            var el=document.getElementById(id);
+            el.classList.remove('hidden');
+            el.classList.remove('fade-up'); void el.offsetWidth; el.classList.add('fade-up');
+            document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('tab-active'); });
+            btn.classList.add('tab-active');
+        }
+    </script>
+
+</body>
+</html>
