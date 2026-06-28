@@ -91,6 +91,11 @@
 
         @keyframes fade-up { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         .fade-up { animation:fade-up .5s ease both; }
+
+        /* 소개 카드 — 3분할 진입(소개·프로그레스·엠블럼) */
+        .seg3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+        .seg3-btn { text-align:center; font-size:12px; font-weight:600; padding:9px 4px; border-radius:8px; background:var(--s2); border:1px solid var(--hairline); color:var(--ink-muted); transition:background-color .18s, border-color .18s, color .18s; white-space:nowrap; }
+        .seg3-btn:hover { background:rgba(201,168,76,0.12); border-color:rgba(201,168,76,0.4); color:var(--gold-bright); }
     </style>
 </head>
 <body class="canvas-glow">
@@ -102,13 +107,6 @@
                 <img src="icon3.png" alt="SAD 공격대" class="w-8 h-8 object-contain rounded-lg">
                 <span class="font-display font-semibold tracking-tight2" style="color:var(--ink); font-size:15px;">SAD 공격대</span>
             </a>
-            <div class="flex items-center gap-2">
-                <a href="introduction.html" class="hidden sm:flex btn-secondary text-sm px-3.5 py-2 items-center">공대 소개</a>
-                <a href="https://open.kakao.com/o/svRS729e" target="_blank" rel="noopener" class="btn-kakao text-sm px-3.5 py-2 flex items-center gap-1.5">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
-                    <span class="hidden sm:inline">카톡 문의</span>
-                </a>
-            </div>
         </div>
     </nav>
 
@@ -139,15 +137,17 @@
                 </span>
             </div>
 
-            <div onclick="location.href='introduction.html'" class="lin-card lin-card-hover lin-card-gold p-7 flex flex-col">
+            <div class="lin-card lin-card-gold p-7 flex flex-col">
                 <div class="flex items-center justify-center w-11 h-11 rounded-xl mb-5" style="background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.22);">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 </div>
                 <h3 class="font-display font-semibold tracking-tight2 mb-1.5" style="color:var(--ink); font-size:19px;">공격대 소개</h3>
                 <p style="color:var(--ink-subtle); font-size:13.5px; line-height:1.55;">SAD 공격대가 걸어온 길</p>
-                <span class="mt-5 inline-flex items-center gap-1 text-sm font-medium" style="color:var(--gold);">바로가기
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                </span>
+                <div class="seg3 mt-auto pt-5">
+                    <a href="introduction.html?tab=tab-about" class="seg3-btn">소개</a>
+                    <a href="introduction.html?tab=tab-progress" class="seg3-btn">프로그레스</a>
+                    <a href="introduction.html?tab=tab-emblem" class="seg3-btn">엠블럼</a>
+                </div>
             </div>
 
             <div class="lin-card disabled-card p-7 flex flex-col">
@@ -182,12 +182,6 @@
             <p style="color:var(--ink-tertiary); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;">© Seeka's Abandoned Dogs. All rights reserved.</p>
         </footer>
     </main>
-
-    <div class="floating-kakao" onclick="window.open('https://open.kakao.com/o/svRS729e', '_blank')" title="카카오톡 문의">
-        <div style="background-color:var(--kakao); border-radius:18px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
-            <svg style="width:28px; height:28px;" viewBox="0 0 24 24" fill="#191600"><path d="M12 3C6.9 3 3 6.3 3 10.2c0 2.5 1.6 4.7 4.1 6l-.9 3.3c-.1.3.2.5.5.4l3.8-2.5c.5.1.9.1 1.4.1 5.1 0 9-3.3 9-7.2S17.1 3 12 3z"/></svg>
-        </div>
-    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
